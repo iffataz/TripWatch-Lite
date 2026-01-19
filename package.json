@@ -1,0 +1,16 @@
+{
+  "name": "tripwatch-lite",
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "backend",
+    "worker"
+  ],
+  "scripts": {
+    "dev": "npm run dev -w backend & npm run dev -w frontend",
+    "lint": "npm run lint -ws",
+    "format": "prettier -w .",
+    "typecheck": "npm run typecheck -ws",
+    "test": "npm run test -ws"
+  }
+}
