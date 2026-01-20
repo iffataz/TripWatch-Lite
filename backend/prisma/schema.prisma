@@ -1,0 +1,44 @@
+generator client {
+  provider = "prisma-client"
+  output = "./generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Deal {
+  id          String   @id @default(cuid())
+  title       String
+  destination String
+  currency    String   @default("AUD")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  watchRules  WatchRule[]
+  snapshots   DealSnapshot[]
+}
+
+model WatchRule {
+  id               String   @id @default(cuid())
+  email            String
+  thresholdPercent Int      // e.g. 10 means "alert if >=10% drop"
+  dealId           String
+  createdAt        DateTime @default(now())
+
+  deal             Deal     @relation(fields: [dealId], references: [id], onDelete: Cascade)
+
+  @@index([dealId])
+}
+
+model DealSnapshot {
+  id           String   @id @default(cuid())
+  dealId       String
+  checkedAt    DateTime @default(now())
+  priceCents   Int
+  availability Int
+
+  deal         Deal     @relation(fields: [dealId], references: [id], onDelete: Cascade)
+
+  @@index([dealId, checkedAt])
+}

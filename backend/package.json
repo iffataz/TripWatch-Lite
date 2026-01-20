@@ -1,11 +1,17 @@
 {
-  "name": "backend",
-  "private": true,
-  "type": "module",
   "scripts": {
     "dev": "node src/index.ts",
     "lint": "eslint .",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "node -e \"console.log('no tests yet')\""
+    "test": "node -e \"console.log('no tests yet')\"",
+    "db:migrate": "prisma migrate dev",
+    "db:seed": "tsx prisma/seed.ts"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
+  },
+  "type": "module",
+  "devDependencies": {
+    "@prisma/adapter-pg": "^7.2.0"
   }
 }
