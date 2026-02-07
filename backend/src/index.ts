@@ -5,6 +5,7 @@ import cors from '@fastify/cors'
 import {dealsRoutes} from './routes/deals'
 import {watchRulesRoutes} from './routes/watchRules'
 import {checksRoutes} from './routes/checks'
+import {providerRoutes} from './routes/provider'
 console.log("Checking DB URL:", process.env.DATABASE_URL);
 const app = Fastify({logger:true})
 
@@ -12,6 +13,7 @@ await app.register(cors, {origin: true})
 await app.register(dealsRoutes);
 await app.register(watchRulesRoutes);
 await app.register(checksRoutes);
+await app.register(providerRoutes);
 
 app.get("/", async () => {
     return {message: "YOU MADE IT TO THE HOMEPAGE"}
