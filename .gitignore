@@ -5,4 +5,5 @@ dist
 .DS_Store
 coverage
 .vscode
-
+# Serverless Framework build artifacts
+infra/.serverless

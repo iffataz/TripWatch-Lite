@@ -1,0 +1,46 @@
+service: tripwatch-lite
+
+frameworkVersion: "3"
+
+provider:
+  name: aws
+  runtime: nodejs20.x
+  region: ap-southeast-2
+
+  # Environment variables available inside Lambda
+  environment:
+    # We'll reuse the queue URL later for debugging, not required for consuming
+    DEAL_CHECKS_QUEUE_URL:
+      Ref: DealChecksQueue
+
+plugins:
+  - serverless-esbuild
+
+custom:
+  esbuild:
+    bundle: true
+    minify: false
+    sourcemap: true
+    platform: node
+    target: node20
+    # This tells esbuild to compile TypeScript nicely for Lambda
+    format: cjs
+
+functions:
+  dealCheckWorker:
+    # This points directly at your TypeScript handler file
+    handler: lambdas/dealCheckWorker.handler
+
+    # This wires the queue to your Lambda automatically
+    events:
+      - sqs:
+          arn:
+            Fn::GetAtt: [DealChecksQueue, Arn]
+          batchSize: 5
+
+resources:
+  Resources:
+    DealChecksQueue:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: tripwatch-deal-checks-v2
