@@ -1,33 +1,37 @@
-import type { FastifyInstance } from 'fastify';
+import type { FastifyInstance } from "fastify";
+import { z } from "zod";
 
-/**
- * Provider Simulator (fake third-party API)
+const paramsSchema = z.object({
+  id: z.string().trim().min(1),
+});
 
- */
+const PRICE_PATTERN = [0, -1200, -700, 400, -2500, -900, 600, -1800, -300, 800];
+
+function hashDealId(value: string): number {
+  let hash = 0;
+  for (const char of value) {
+    hash += char.charCodeAt(0);
+  }
+  return hash;
+}
+
 export async function providerRoutes(app: FastifyInstance) {
-  app.get('/provider/deals/:id', async (req: any) => {
-    const dealId: string = req.params.id;
-
-    // Base price in cents (e.g., $500.00 AUD)
-    const basePriceCents = 500_00;
-
-   
-    const bucket = Math.floor(Date.now() / 30_000); // changes every 30s
-    const dealFactor = dealId.length * 37;
-
-    // A pseudo-random-ish fluctuation between -$40 and +$40
-    const fluctuationCents = ((bucket + dealFactor) % 8000) - 4000;
-
-    const priceCents = Math.max(50_00, basePriceCents + fluctuationCents); // never below $50
-    const availability = 1 + ((bucket + dealFactor) % 20); // 1..20 rooms
+  app.get("/provider/deals/:id", async (req: { params: unknown }) => {
+    const { id: dealId } = paramsSchema.parse(req.params);
+    const basePriceCents = 50_000;
+    const bucketSizeMs = 60_000;
+    const bucket = Math.floor(Date.now() / bucketSizeMs);
+    const offset = hashDealId(dealId) % PRICE_PATTERN.length;
+    const patternIndex = (bucket + offset) % PRICE_PATTERN.length;
+    const priceDelta = PRICE_PATTERN[patternIndex] ?? 0;
+    const priceCents = Math.max(10_000, basePriceCents + priceDelta);
+    const availability = 4 + ((bucket + offset) % 10);
 
     return {
-      provider: 'provider-sim',
       dealId,
-      currency: 'AUD',
       priceCents,
       availability,
-      checkedAt: new Date().toISOString(),
+      checkedAt: new Date(bucket * bucketSizeMs).toISOString(),
     };
   });
 }
